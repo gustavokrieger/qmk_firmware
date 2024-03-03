@@ -111,17 +111,22 @@ bool rgb_matrix_indicators_user(void) {
     return true;
 }
 
-enum custom_keycodes layer = BASE;
-keyevent_t           pending[10];
-int                  pending_size = 0;
-uint16_t             hold_keycode[4];
-uint8_t              hold_col[4];
-uint8_t              hold_row[4];
-int                  hold_size = 0;
+uint16_t   layer       = KC_NO;
+bool       layer_stick = false;
+keyevent_t pending[10];
+int        pending_size = 0;
+uint16_t   hold_keycode[4];
+uint8_t    hold_col[4];
+uint8_t    hold_row[4];
+int        hold_size = 0;
 
 // Assumes separate layers for modifiers.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!record->event.pressed) {
+        if (keycode == BASE) {
+            return false;
+        }
+
         // True only if it comes from mod layer.
         if (IS_MODIFIER_KEYCODE(keycode)) {
             return true;
@@ -166,6 +171,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             default:
                 break;
         }
+        layer = KC_NO;
+
+        if (pending_size == 0) {
+            layer_stick = true;
+            return false;
+        }
 
         uint16_t unregister = KC_NO;
         bool     mod        = false;
@@ -201,30 +212,35 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         if (unregister != KC_NO) {
             unregister_code(unregister);
         }
-        if (get_mods() == 0) {
-            layer_clear();
+        if (layer_stick) {
+            switch (keycode) {
+                case KC_A ... KC_Z:
+                case KC_ENTER:
+                case KC_ESCAPE:
+                case KC_BACKSPACE:
+                case KC_SPACE:
+                case KC_TAB:
+                case KC_DELETE:
+                case KC_SEMICOLON:
+                case KC_COMMA:
+                case KC_DOT:
+                case KC_SLASH:
+                    if (get_mods() == 0) {
+                        layer_clear();
+                    } else {
+                        layer_off(non_mod_layer);
+                    }
+            }
         } else {
-            layer_off(non_mod_layer);
+            if (get_mods() == 0) {
+                layer_clear();
+            } else {
+                layer_off(non_mod_layer);
+            }
         }
-        layer        = BASE;
         pending_size = 0;
         return false;
     }
-
-    // switch (keycode) {
-    //     case KC_A ... KC_Z:
-    //     case KC_ENTER:
-    //     case KC_ESCAPE:
-    //     case KC_BACKSPACE:
-    //     case KC_SPACE:
-    //     case KC_TAB:
-    //     case KC_DELETE:
-    //     case KC_SEMICOLON:
-    //     case KC_COMMA:
-    //     case KC_DOT:
-    //     case KC_SLASH:
-    //         layer_clear();
-    // }
 
     // True only if it comes from mod layer.
     if (IS_MODIFIER_KEYCODE(keycode)) {
@@ -232,10 +248,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+        case BASE:
+            layer_clear();
+            return false;
         case LEFT:
         case RIGHT:
             layer = keycode;
-            return true;
+            return false;
     }
 
     pending[pending_size] = record->event;
