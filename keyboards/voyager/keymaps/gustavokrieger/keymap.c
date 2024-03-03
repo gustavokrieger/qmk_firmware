@@ -122,123 +122,29 @@ int        hold_size = 0;
 
 // Assumes separate layers for modifiers.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (!record->event.pressed) {
-        if (keycode == BASE) {
-            return false;
-        }
-
+    if (record->event.pressed) {
         // True only if it comes from mod layer.
         if (IS_MODIFIER_KEYCODE(keycode)) {
             return true;
         }
 
-        for (int i = 0; i < hold_size; i++) {
-            if (!(record->event.key.col == hold_col[i] && record->event.key.row == hold_row[i])) {
-                continue;
-            }
-
-            unregister_code(hold_keycode[i]);
-            if (get_mods() == 0) {
+        switch (keycode) {
+            case BASE:
                 layer_clear();
-            }
-
-            for (; i + 1 < hold_size; i++) {
-                hold_keycode[i] = hold_keycode[i + 1];
-                hold_col[i]     = hold_col[i + 1];
-                hold_row[i]     = hold_row[i + 1];
-            }
-            hold_size--;
-
-            return false;
-        }
-
-        uint8_t mod_layer     = 0;
-        uint8_t non_mod_layer = 0;
-
-        switch (layer) {
+                return false;
             case LEFT:
-                mod_layer = 1;
-                layer_move(1);
-                non_mod_layer = 2;
-                layer_on(2);
-                break;
             case RIGHT:
-                mod_layer = 3;
-                layer_move(3);
-                non_mod_layer = 4;
-                layer_on(4);
-                break;
-            default:
-                break;
-        }
-        layer = KC_NO;
-
-        if (pending_size == 0) {
-            layer_stick = true;
-            return false;
+                layer = keycode;
+                return false;
         }
 
-        uint16_t unregister = KC_NO;
-        bool     mod        = false;
-        for (int i = 0; i < pending_size; i++) {
-            uint16_t code = get_event_keycode(pending[i], true);
-            if (IS_MODIFIER_KEYCODE(code)) {
-                if (record->event.key.col == pending[i].key.col && record->event.key.row == pending[i].key.row) {
-                    unregister = code;
-                } else {
-                    hold_keycode[hold_size] = code;
-                    hold_col[hold_size]     = pending[i].key.col;
-                    hold_row[hold_size]     = pending[i].key.row;
-                    hold_size++;
-                }
+        pending[pending_size] = record->event;
+        pending_size++;
 
-                register_code(code);
-                mod = true;
-            }
-        }
+        return false;
+    }
 
-        if (mod) {
-            // assert(mod_layer != 0);
-            layer_move(mod_layer);
-        }
-
-        for (int i = 0; i < pending_size; i++) {
-            uint16_t code = get_event_keycode(pending[i], true);
-            if (!IS_MODIFIER_KEYCODE(code)) {
-                tap_code(code);
-            }
-        }
-
-        if (unregister != KC_NO) {
-            unregister_code(unregister);
-        }
-        if (layer_stick) {
-            switch (keycode) {
-                case KC_A ... KC_Z:
-                case KC_ENTER:
-                case KC_ESCAPE:
-                case KC_BACKSPACE:
-                case KC_SPACE:
-                case KC_TAB:
-                case KC_DELETE:
-                case KC_SEMICOLON:
-                case KC_COMMA:
-                case KC_DOT:
-                case KC_SLASH:
-                    if (get_mods() == 0) {
-                        layer_clear();
-                    } else {
-                        layer_off(non_mod_layer);
-                    }
-            }
-        } else {
-            if (get_mods() == 0) {
-                layer_clear();
-            } else {
-                layer_off(non_mod_layer);
-            }
-        }
-        pending_size = 0;
+    if (keycode == BASE) {
         return false;
     }
 
@@ -247,19 +153,113 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return true;
     }
 
-    switch (keycode) {
-        case BASE:
+    for (int i = 0; i < hold_size; i++) {
+        if (!(record->event.key.col == hold_col[i] && record->event.key.row == hold_row[i])) {
+            continue;
+        }
+
+        unregister_code(hold_keycode[i]);
+        if (get_mods() == 0) {
             layer_clear();
-            return false;
-        case LEFT:
-        case RIGHT:
-            layer = keycode;
-            return false;
+        }
+
+        for (; i + 1 < hold_size; i++) {
+            hold_keycode[i] = hold_keycode[i + 1];
+            hold_col[i]     = hold_col[i + 1];
+            hold_row[i]     = hold_row[i + 1];
+        }
+        hold_size--;
+
+        return false;
     }
 
-    pending[pending_size] = record->event;
-    pending_size++;
+    uint8_t mod_layer     = 0;
+    uint8_t non_mod_layer = 0;
 
+    switch (layer) {
+        case LEFT:
+            mod_layer = 1;
+            layer_move(1);
+            non_mod_layer = 2;
+            layer_on(2);
+            break;
+        case RIGHT:
+            mod_layer = 3;
+            layer_move(3);
+            non_mod_layer = 4;
+            layer_on(4);
+            break;
+        default:
+            break;
+    }
+    layer = KC_NO;
+
+    if (pending_size == 0) {
+        layer_stick = true;
+        return false;
+    }
+
+    uint16_t unregister = KC_NO;
+    bool     mod        = false;
+    for (int i = 0; i < pending_size; i++) {
+        uint16_t code = get_event_keycode(pending[i], true);
+        if (IS_MODIFIER_KEYCODE(code)) {
+            if (record->event.key.col == pending[i].key.col && record->event.key.row == pending[i].key.row) {
+                unregister = code;
+            } else {
+                hold_keycode[hold_size] = code;
+                hold_col[hold_size]     = pending[i].key.col;
+                hold_row[hold_size]     = pending[i].key.row;
+                hold_size++;
+            }
+
+            register_code(code);
+            mod = true;
+        }
+    }
+
+    if (mod) {
+        // assert(mod_layer != 0);
+        layer_move(mod_layer);
+    }
+
+    for (int i = 0; i < pending_size; i++) {
+        uint16_t code = get_event_keycode(pending[i], true);
+        if (!IS_MODIFIER_KEYCODE(code)) {
+            tap_code(code);
+        }
+    }
+
+    if (unregister != KC_NO) {
+        unregister_code(unregister);
+    }
+    if (layer_stick) {
+        switch (keycode) {
+            case KC_A ... KC_Z:
+            case KC_ENTER:
+            case KC_ESCAPE:
+            case KC_BACKSPACE:
+            case KC_SPACE:
+            case KC_TAB:
+            case KC_DELETE:
+            case KC_SEMICOLON:
+            case KC_COMMA:
+            case KC_DOT:
+            case KC_SLASH:
+                if (get_mods() == 0) {
+                    layer_clear();
+                } else {
+                    layer_off(non_mod_layer);
+                }
+        }
+    } else {
+        if (get_mods() == 0) {
+            layer_clear();
+        } else {
+            layer_off(non_mod_layer);
+        }
+    }
+    pending_size = 0;
     return false;
 }
 
