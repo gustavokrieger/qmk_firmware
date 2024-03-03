@@ -119,16 +119,14 @@ uint8_t              hold_col[4];
 uint8_t              hold_row[4];
 int                  hold_size = 0;
 
+// Assumes separate layers for modifiers.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // if (!record->event.pressed) {
-    //     if (press == keycode || IS_MODIFIER_KEYCODE(keycode)) {
-    //         tap_code(press);
-    //         press = KC_NO;
-    //     }
-    //     return true;
-    // }
-
     if (!record->event.pressed) {
+        // True only if it comes from mod layer.
+        if (IS_MODIFIER_KEYCODE(keycode)) {
+            return true;
+        }
+
         for (int i = 0; i < hold_size; i++) {
             if (!(record->event.key.col == hold_col[i] && record->event.key.row == hold_row[i])) {
                 continue;
@@ -149,17 +147,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         }
 
-        uint8_t mod_layer = 0;
+        uint8_t mod_layer     = 0;
+        uint8_t non_mod_layer = 0;
 
         switch (layer) {
             case LEFT:
                 mod_layer = 1;
                 layer_move(1);
+                non_mod_layer = 2;
                 layer_on(2);
                 break;
             case RIGHT:
                 mod_layer = 3;
                 layer_move(3);
+                non_mod_layer = 4;
                 layer_on(4);
                 break;
             default:
@@ -199,9 +200,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         if (unregister != KC_NO) {
             unregister_code(unregister);
-            if (get_mods() == 0) {
-                layer_clear();
-            }
+        }
+        if (get_mods() == 0) {
+            layer_clear();
+        } else {
+            layer_off(non_mod_layer);
         }
         layer        = BASE;
         pending_size = 0;
@@ -223,6 +226,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     //         layer_clear();
     // }
 
+    // True only if it comes from mod layer.
+    if (IS_MODIFIER_KEYCODE(keycode)) {
+        return true;
+    }
+
     switch (keycode) {
         case LEFT:
         case RIGHT:
@@ -236,8 +244,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return false;
 }
 
-// void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-//     if (get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
-//         layer_clear();
-//     }
-// }
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
+        layer_clear();
+    }
+}
