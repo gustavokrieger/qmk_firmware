@@ -1,4 +1,4 @@
-#include <stdbool.h>
+#include "action_util.h"
 #include QMK_KEYBOARD_H
 #include "version.h"
 
@@ -115,6 +115,7 @@ bool rgb_matrix_indicators_user(void) {
 
 keyevent_t pending[10];
 int        pending_size = 0;
+bool       cleared      = false;
 
 enum Layer {
     BASE,
@@ -134,52 +135,67 @@ enum State state = NORMAL;
 // Assumes separate layers for modifiers.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
-        // if (state == NORMAL) {
-        switch (keycode) {
-            case TO_LEFT:
-                pending_layer = LEFT;
-                return false;
-            case TO_RIGHT:
-                pending_layer = RIGHT;
-                return false;
-            default:
-                break;
+        if (state == NORMAL) {
+            switch (keycode) {
+                case TO_LEFT:
+                    pending_layer = LEFT;
+                    return false;
+                case TO_RIGHT:
+                    pending_layer = RIGHT;
+                    return false;
+                default:
+                    break;
+            }
+
+            pending[pending_size] = record->event;
+            pending_size++;
+
+            return false;
         }
 
-        pending[pending_size] = record->event;
-        pending_size++;
+        switch (keycode) {
+            case TO_BASE:
+                layer_clear();
+                state = NORMAL;
+                return false;
+            case TO_LEFT:
+                layer_move(1);
+                layer_on(2);
+                return false;
+            case TO_RIGHT:
+                layer_move(3);
+                layer_on(4);
+                return false;
+        }
 
-        return false;
-        // }
-
-        // return false;
-
-        // switch (keycode) {
-        //     case TO_BASE:
-        //         layer_clear();
-        //         state = NORMAL;
-        //         return false;
-        //     case TO_LEFT:
-        //         layer_move(1);
-        //         layer_on(2);
-        //         return false;
-        //     case TO_RIGHT:
-        //         layer_move(3);
-        //         layer_on(4);
-        //         return false;
-        // }
-        // return true;
+        return true;
     }
 
-    // if (state == NORMAL) {
-    // if (keycode == BASE) {
-    //     return false;
-    // }
+    if (state == NORMAL) {
+        if (keycode == BASE) {
+            return false;
+        }
 
-    if (pending_size == 0) {
+        if (pending_size == 0) {
+            switch (pending_layer) {
+                case BASE:
+                    return false;
+                case LEFT:
+                    layer_move(1);
+                    layer_on(2);
+                    break;
+                case RIGHT:
+                    layer_move(3);
+                    layer_on(4);
+                    break;
+            }
+
+            pending_layer = BASE;
+            state         = LAYER;
+            return false;
+        }
+
         switch (pending_layer) {
-            case BASE:
-                return false;
             case LEFT:
                 layer_move(1);
                 layer_on(2);
@@ -188,75 +204,82 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 layer_move(3);
                 layer_on(4);
                 break;
-        }
-
-        pending_layer = BASE;
-        state         = LAYER;
-        return false;
-    }
-
-    switch (pending_layer) {
-        case LEFT:
-            layer_move(1);
-            layer_on(2);
-            break;
-        case RIGHT:
-            layer_move(3);
-            layer_on(4);
-            break;
-        default:
-            break;
-    }
-
-    bool mod = false;
-    for (int i = 0; i < pending_size; i++) {
-        uint16_t code = get_event_keycode(pending[i], true);
-        if (IS_MODIFIER_KEYCODE(code)) {
-            register_code(code);
-            mod = true;
-        }
-    }
-
-    if (mod) {
-        switch (pending_layer) {
-            case LEFT:
-                layer_off(2);
-                break;
-            case RIGHT:
-                layer_off(4);
-                break;
             default:
                 break;
         }
-    }
-    pending_layer = BASE;
 
-    for (int i = 0; i < pending_size; i++) {
-        uint16_t code = get_event_keycode(pending[i], true);
-        if (!IS_MODIFIER_KEYCODE(code)) {
-            tap_code(code);
-        }
-    }
-
-    if (mod) {
+        bool mod = false;
         for (int i = 0; i < pending_size; i++) {
             uint16_t code = get_event_keycode(pending[i], true);
             if (IS_MODIFIER_KEYCODE(code)) {
-                unregister_code(code);
+                register_code(code);
+                mod = true;
             }
         }
+
+        if (mod) {
+            switch (pending_layer) {
+                case LEFT:
+                    layer_off(2);
+                    break;
+                case RIGHT:
+                    layer_off(4);
+                    break;
+                default:
+                    break;
+            }
+        }
+        pending_layer = BASE;
+
+        for (int i = 0; i < pending_size; i++) {
+            uint16_t code = get_event_keycode(pending[i], true);
+            if (!IS_MODIFIER_KEYCODE(code)) {
+                tap_code(code);
+            }
+        }
+
+        if (mod) {
+            for (int i = 0; i < pending_size; i++) {
+                uint16_t code = get_event_keycode(pending[i], true);
+                if (IS_MODIFIER_KEYCODE(code)) {
+                    unregister_code(code);
+                }
+            }
+        }
+
+        layer_clear();
+        pending_size = 0;
+        return false;
     }
 
-    layer_clear();
-    pending_size = 0;
-    return false;
-    // }
-
-    // return false;
+    return true;
 }
 
-// void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-//     if (state == LAYER && get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
-//         layer_clear();
-//     }
-// }
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed || state != LAYER) {
+        return;
+    }
+
+    switch (keycode) {
+        case KC_A ... KC_Z:
+        case KC_ENTER:
+        case KC_ESCAPE:
+        case KC_BACKSPACE:
+        case KC_SPACE:
+        case KC_TAB:
+        case KC_DELETE:
+        case KC_SEMICOLON:
+        case KC_COMMA:
+        case KC_DOT:
+        case KC_SLASH:
+            clear_mods();
+            layer_clear();
+            state = NORMAL;
+            return;
+    }
+
+    if (get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
+        layer_clear();
+        state = NORMAL;
+    }
+}
