@@ -1,11 +1,13 @@
+#include <stdbool.h>
 #include QMK_KEYBOARD_H
 #include "version.h"
+
 #define MOON_LED_LEVEL LED_LEVEL
 
 enum custom_keycodes {
-    BASE = ML_SAFE_RANGE,
-    LEFT,
-    RIGHT,
+    TO_BASE = ML_SAFE_RANGE,
+    TO_LEFT,
+    TO_RIGHT,
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -15,7 +17,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB,         KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,                                           KC_Y,           KC_U,           KC_I,           KC_O,           KC_P,           KC_DELETE,      
     KC_ESCAPE,      KC_A,           KC_S,           KC_D,           KC_F,           KC_G,                                           KC_H,           KC_J,           KC_K,           KC_L,           KC_SCLN,        KC_ENTER,       
     KC_NO,          KC_Z,           KC_X,           KC_C,           KC_V,           KC_B,                                           KC_N,           KC_M,           KC_COMMA,       KC_DOT,         KC_SLASH,       KC_CAPS,        
-                                                    KC_SPACE,       LEFT,                                          RIGHT,          KC_BSPC
+                                                    KC_SPACE,       TO_LEFT,                                          TO_RIGHT,          KC_BSPC
   ),
   [1] = LAYOUT_voyager(
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
@@ -29,7 +31,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_NO,          KC_NO,          KC_NO,          KC_MINUS,       KC_EQUAL,       KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_LEFT,        KC_DOWN,        KC_UP,          KC_RIGHT,       KC_QUOTE,       KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_NO,          KC_NO,          KC_LBRC,        KC_RBRC,        KC_BSLS,        KC_NO,          
-                                                    KC_TRANSPARENT, BASE,                                          KC_TRANSPARENT, KC_TRANSPARENT
+                                                    KC_TRANSPARENT, TO_BASE,                                          KC_TRANSPARENT, KC_TRANSPARENT
   ),
   [3] = LAYOUT_voyager(
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
@@ -43,7 +45,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_GRAVE,       KC_NO,          KC_NO,          KC_NO,          KC_NO,                                          KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_NO,          KC_HOME,        KC_PAGE_UP,     KC_PGDN,        KC_END,                                         KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,                                          KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
-                                                    KC_TRANSPARENT, KC_TRANSPARENT,                                 BASE,          KC_TRANSPARENT
+                                                    KC_TRANSPARENT, KC_TRANSPARENT,                                 TO_BASE,          KC_TRANSPARENT
   ),
     // clang-format on
 };
@@ -111,117 +113,123 @@ bool rgb_matrix_indicators_user(void) {
     return true;
 }
 
-uint16_t   layer       = KC_NO;
-bool       layer_stick = false;
 keyevent_t pending[10];
 int        pending_size = 0;
-uint16_t   hold_keycode[4];
-uint8_t    hold_col[4];
-uint8_t    hold_row[4];
-int        hold_size = 0;
+
+enum Layer {
+    BASE,
+    LEFT,
+    RIGHT,
+};
+
+enum Layer pending_layer = BASE;
+
+enum State {
+    NORMAL,
+    LAYER,
+};
+
+enum State state = NORMAL;
 
 // Assumes separate layers for modifiers.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
-        // True only if it comes from mod layer.
-        if (IS_MODIFIER_KEYCODE(keycode)) {
-            return true;
-        }
-
+        // if (state == NORMAL) {
         switch (keycode) {
-            case BASE:
-                layer_clear();
+            case TO_LEFT:
+                pending_layer = LEFT;
                 return false;
-            case LEFT:
-            case RIGHT:
-                layer = keycode;
+            case TO_RIGHT:
+                pending_layer = RIGHT;
                 return false;
+            default:
+                break;
         }
 
         pending[pending_size] = record->event;
         pending_size++;
 
         return false;
+        // }
+
+        // return false;
+
+        // switch (keycode) {
+        //     case TO_BASE:
+        //         layer_clear();
+        //         state = NORMAL;
+        //         return false;
+        //     case TO_LEFT:
+        //         layer_move(1);
+        //         layer_on(2);
+        //         return false;
+        //     case TO_RIGHT:
+        //         layer_move(3);
+        //         layer_on(4);
+        //         return false;
+        // }
+        // return true;
     }
 
-    if (keycode == BASE) {
+    // if (state == NORMAL) {
+    // if (keycode == BASE) {
+    //     return false;
+    // }
+
+    if (pending_size == 0) {
+        switch (pending_layer) {
+            case BASE:
+                return false;
+            case LEFT:
+                layer_move(1);
+                layer_on(2);
+                break;
+            case RIGHT:
+                layer_move(3);
+                layer_on(4);
+                break;
+        }
+
+        pending_layer = BASE;
+        state         = LAYER;
         return false;
     }
 
-    // True only if it comes from mod layer.
-    if (IS_MODIFIER_KEYCODE(keycode)) {
-        return true;
-    }
-
-    for (int i = 0; i < hold_size; i++) {
-        if (!(record->event.key.col == hold_col[i] && record->event.key.row == hold_row[i])) {
-            continue;
-        }
-
-        unregister_code(hold_keycode[i]);
-        if (get_mods() == 0) {
-            layer_clear();
-        }
-
-        for (; i + 1 < hold_size; i++) {
-            hold_keycode[i] = hold_keycode[i + 1];
-            hold_col[i]     = hold_col[i + 1];
-            hold_row[i]     = hold_row[i + 1];
-        }
-        hold_size--;
-
-        return false;
-    }
-
-    uint8_t mod_layer     = 0;
-    uint8_t non_mod_layer = 0;
-
-    switch (layer) {
+    switch (pending_layer) {
         case LEFT:
-            mod_layer = 1;
             layer_move(1);
-            non_mod_layer = 2;
             layer_on(2);
             break;
         case RIGHT:
-            mod_layer = 3;
             layer_move(3);
-            non_mod_layer = 4;
             layer_on(4);
             break;
         default:
             break;
     }
-    layer = KC_NO;
 
-    if (pending_size == 0) {
-        layer_stick = true;
-        return false;
-    }
-
-    uint16_t unregister = KC_NO;
-    bool     mod        = false;
+    bool mod = false;
     for (int i = 0; i < pending_size; i++) {
         uint16_t code = get_event_keycode(pending[i], true);
         if (IS_MODIFIER_KEYCODE(code)) {
-            if (record->event.key.col == pending[i].key.col && record->event.key.row == pending[i].key.row) {
-                unregister = code;
-            } else {
-                hold_keycode[hold_size] = code;
-                hold_col[hold_size]     = pending[i].key.col;
-                hold_row[hold_size]     = pending[i].key.row;
-                hold_size++;
-            }
-
             register_code(code);
             mod = true;
         }
     }
 
     if (mod) {
-        // assert(mod_layer != 0);
-        layer_move(mod_layer);
+        switch (pending_layer) {
+            case LEFT:
+                layer_off(2);
+                break;
+            case RIGHT:
+                layer_off(4);
+                break;
+            default:
+                break;
+        }
     }
+    pending_layer = BASE;
 
     for (int i = 0; i < pending_size; i++) {
         uint16_t code = get_event_keycode(pending[i], true);
@@ -230,41 +238,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
     }
 
-    if (unregister != KC_NO) {
-        unregister_code(unregister);
-    }
-    if (layer_stick) {
-        switch (keycode) {
-            case KC_A ... KC_Z:
-            case KC_ENTER:
-            case KC_ESCAPE:
-            case KC_BACKSPACE:
-            case KC_SPACE:
-            case KC_TAB:
-            case KC_DELETE:
-            case KC_SEMICOLON:
-            case KC_COMMA:
-            case KC_DOT:
-            case KC_SLASH:
-                if (get_mods() == 0) {
-                    layer_clear();
-                } else {
-                    layer_off(non_mod_layer);
-                }
-        }
-    } else {
-        if (get_mods() == 0) {
-            layer_clear();
-        } else {
-            layer_off(non_mod_layer);
+    if (mod) {
+        for (int i = 0; i < pending_size; i++) {
+            uint16_t code = get_event_keycode(pending[i], true);
+            if (IS_MODIFIER_KEYCODE(code)) {
+                unregister_code(code);
+            }
         }
     }
+
+    layer_clear();
     pending_size = 0;
     return false;
+    // }
+
+    // return false;
 }
 
-void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
-        layer_clear();
-    }
-}
+// void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+//     if (state == LAYER && get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
+//         layer_clear();
+//     }
+// }
