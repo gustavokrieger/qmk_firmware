@@ -1,6 +1,6 @@
-#include "action_util.h"
+#include <stdbool.h>
+#include "action_layer.h"
 #include QMK_KEYBOARD_H
-#include "version.h"
 
 #define MOON_LED_LEVEL LED_LEVEL
 
@@ -23,7 +23,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_LEFT_GUI,    KC_LEFT_CTRL,   KC_LEFT_SHIFT,  KC_LEFT_ALT,    KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
-    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
+    KC_TRANSPARENT, KC_LEFT_GUI,    KC_LEFT_CTRL,   KC_LEFT_SHIFT,  KC_LEFT_ALT,    KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
                                                     KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT
   ),
   [2] = LAYOUT_voyager(
@@ -37,7 +37,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_RIGHT_ALT,   KC_RIGHT_SHIFT, KC_RIGHT_CTRL,  KC_RIGHT_GUI,   KC_TRANSPARENT, 
-    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
+    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_RIGHT_ALT,   KC_RIGHT_SHIFT, KC_RIGHT_CTRL,  KC_RIGHT_GUI,   KC_TRANSPARENT, 
                                                     KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT
   ),
   [4] = LAYOUT_voyager(
@@ -172,10 +172,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     if (state == NORMAL) {
+        // discard base layer key, it can come from the layer state.
         if (keycode == BASE) {
             return false;
         }
 
+        // move to layer state.
         if (pending_size == 0) {
             switch (pending_layer) {
                 case BASE:
@@ -195,6 +197,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         }
 
+        // apply layers without changing state.
         switch (pending_layer) {
             case LEFT:
                 layer_move(1);
@@ -208,6 +211,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 break;
         }
 
+        // add modifiers.
         bool mod = false;
         for (int i = 0; i < pending_size; i++) {
             uint16_t code = get_event_keycode(pending[i], true);
@@ -217,6 +221,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
         }
 
+        // change to layer state in case there are modifiers but no tap.
+        if (mod && pending_layer != BASE) {
+            bool tap = false;
+            for (int i = 0; i < pending_size; i++) {
+                uint16_t code = get_event_keycode(pending[i], true);
+                if (!IS_MODIFIER_KEYCODE(code)) {
+                    tap = true;
+                    break;
+                }
+            }
+            if (!tap) {
+                pending_size  = 0;
+                pending_layer = BASE;
+                state         = LAYER;
+                return false;
+            }
+        }
+
+        // needed since base state has priority over layer.
         if (mod) {
             switch (pending_layer) {
                 case LEFT:
@@ -231,6 +254,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         pending_layer = BASE;
 
+        // do the taps.
         for (int i = 0; i < pending_size; i++) {
             uint16_t code = get_event_keycode(pending[i], true);
             if (!IS_MODIFIER_KEYCODE(code)) {
@@ -238,6 +262,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
         }
 
+        // unregister mods.
         if (mod) {
             for (int i = 0; i < pending_size; i++) {
                 uint16_t code = get_event_keycode(pending[i], true);
@@ -272,10 +297,11 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_COMMA:
         case KC_DOT:
         case KC_SLASH:
-            clear_mods();
-            layer_clear();
-            state = NORMAL;
-            return;
+            if (get_mods() == 0) {
+                layer_clear();
+                state = NORMAL;
+                return;
+            }
     }
 
     if (get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
