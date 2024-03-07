@@ -284,7 +284,7 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
-        case KC_A ... KC_Z:
+        case KC_A ... KC_0:
         case KC_ENTER:
         case KC_ESCAPE:
         case KC_BACKSPACE:
