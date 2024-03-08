@@ -130,73 +130,35 @@ enum State {
 
 enum State state = NORMAL;
 
-// Assumes separate layers for modifiers.
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (record->event.pressed) {
-        if (state == NORMAL) {
-            switch (keycode) {
-                case TO_LEFT:
-                    pending_layer = LEFT;
-                    return false;
-                case TO_RIGHT:
-                    pending_layer = RIGHT;
-                    return false;
-                default:
-                    break;
-            }
-
-            pending[pending_size] = record->event;
-            pending_size++;
-
+static bool normal_pressed(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case TO_LEFT:
+            pending_layer = LEFT;
             return false;
-        }
-
-        switch (keycode) {
-            case TO_BASE:
-                layer_clear();
-                state = NORMAL;
-                return false;
-            case TO_LEFT:
-                layer_move(1);
-                layer_on(2);
-                return false;
-            case TO_RIGHT:
-                layer_move(3);
-                layer_on(4);
-                return false;
-        }
-
-        return true;
+        case TO_RIGHT:
+            pending_layer = RIGHT;
+            return false;
+        default:
+            break;
     }
 
-    if (state == NORMAL) {
-        // discard base layer key, it can come from the layer state.
-        if (keycode == BASE) {
-            return false;
-        }
+    pending[pending_size] = record->event;
+    pending_size++;
 
-        // move to layer state.
-        if (pending_size == 0) {
-            switch (pending_layer) {
-                case BASE:
-                    return false;
-                case LEFT:
-                    layer_move(1);
-                    layer_on(2);
-                    break;
-                case RIGHT:
-                    layer_move(3);
-                    layer_on(4);
-                    break;
-            }
+    return false;
+}
 
-            pending_layer = BASE;
-            state         = LAYER;
-            return false;
-        }
+static bool normal_released(uint16_t keycode) {
+    // discard base layer key, it can come from the layer state.
+    if (keycode == BASE) {
+        return false;
+    }
 
-        // apply layers without changing state.
+    // move to layer state.
+    if (pending_size == 0) {
         switch (pending_layer) {
+            case BASE:
+                return false;
             case LEFT:
                 layer_move(1);
                 layer_on(2);
@@ -205,74 +167,123 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 layer_move(3);
                 layer_on(4);
                 break;
-            default:
-                break;
         }
 
-        // add modifiers.
-        bool mod = false;
-        for (int i = 0; i < pending_size; i++) {
-            uint16_t code = get_event_keycode(pending[i], true);
-            if (IS_MODIFIER_KEYCODE(code)) {
-                register_code(code);
-                mod = true;
-            }
-        }
-
-        // change to layer state in case there are modifiers but no tap.
-        if (mod && pending_layer != BASE) {
-            bool tap = false;
-            for (int i = 0; i < pending_size; i++) {
-                uint16_t code = get_event_keycode(pending[i], true);
-                if (!IS_MODIFIER_KEYCODE(code)) {
-                    tap = true;
-                    break;
-                }
-            }
-            if (!tap) {
-                pending_size  = 0;
-                pending_layer = BASE;
-                state         = LAYER;
-                return false;
-            }
-        }
-
-        // needed since base state has priority over layer.
-        if (mod) {
-            switch (pending_layer) {
-                case LEFT:
-                    layer_off(2);
-                    break;
-                case RIGHT:
-                    layer_off(4);
-                    break;
-                default:
-                    break;
-            }
-        }
         pending_layer = BASE;
+        state         = LAYER;
+        return false;
+    }
 
-        // do the taps.
+    // apply layers without changing state.
+    switch (pending_layer) {
+        case LEFT:
+            layer_move(1);
+            layer_on(2);
+            break;
+        case RIGHT:
+            layer_move(3);
+            layer_on(4);
+            break;
+        default:
+            break;
+    }
+
+    // add modifiers.
+    bool mod = false;
+    for (int i = 0; i < pending_size; i++) {
+        uint16_t code = get_event_keycode(pending[i], true);
+        if (IS_MODIFIER_KEYCODE(code)) {
+            register_code(code);
+            mod = true;
+        }
+    }
+
+    // change to layer state in case there are modifiers but no tap.
+    if (mod && pending_layer != BASE) {
+        bool tap = false;
         for (int i = 0; i < pending_size; i++) {
             uint16_t code = get_event_keycode(pending[i], true);
             if (!IS_MODIFIER_KEYCODE(code)) {
-                tap_code(code);
+                tap = true;
+                break;
             }
         }
+        if (!tap) {
+            pending_size  = 0;
+            pending_layer = BASE;
+            state         = LAYER;
+            return false;
+        }
+    }
 
-        // unregister mods.
-        if (mod) {
-            for (int i = 0; i < pending_size; i++) {
-                uint16_t code = get_event_keycode(pending[i], true);
-                if (IS_MODIFIER_KEYCODE(code)) {
-                    unregister_code(code);
-                }
+    // needed since base state has priority over layer.
+    if (mod) {
+        switch (pending_layer) {
+            case LEFT:
+                layer_off(2);
+                break;
+            case RIGHT:
+                layer_off(4);
+                break;
+            default:
+                break;
+        }
+    }
+    pending_layer = BASE;
+
+    // do the taps.
+    for (int i = 0; i < pending_size; i++) {
+        uint16_t code = get_event_keycode(pending[i], true);
+        if (!IS_MODIFIER_KEYCODE(code)) {
+            tap_code(code);
+        }
+    }
+
+    // unregister mods.
+    if (mod) {
+        for (int i = 0; i < pending_size; i++) {
+            uint16_t code = get_event_keycode(pending[i], true);
+            if (IS_MODIFIER_KEYCODE(code)) {
+                unregister_code(code);
             }
         }
+    }
 
-        layer_clear();
-        pending_size = 0;
-        return false;
+    layer_clear();
+    pending_size = 0;
+    return false;
+}
+
+static bool layer_pressed(uint16_t keycode) {
+    switch (keycode) {
+        case TO_BASE:
+            layer_clear();
+            state = NORMAL;
+            return false;
+        case TO_LEFT:
+            layer_move(1);
+            layer_on(2);
+            return false;
+        case TO_RIGHT:
+            layer_move(3);
+            layer_on(4);
+            return false;
+    }
+    return true;
+}
+
+// Assumes separate layers for modifiers.
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        if (state == NORMAL) {
+            return normal_pressed(keycode, record);
+        }
+
+        return layer_pressed(keycode);
+    }
+
+    if (state == NORMAL) {
+        return normal_released(keycode);
     }
 
     return true;
