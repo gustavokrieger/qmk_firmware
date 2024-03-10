@@ -1,10 +1,7 @@
+#include <stdbool.h>
 #include QMK_KEYBOARD_H
 #include "version.h"
 #define MOON_LED_LEVEL LED_LEVEL
-
-enum custom_keycodes {
-    RGB_SLD = ML_SAFE_RANGE,
-};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format off
@@ -103,12 +100,27 @@ bool rgb_matrix_indicators_user(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case RGB_SLD:
-            if (record->event.pressed) {
-                rgblight_mode(1);
-            }
-            return false;
+    if (record->event.pressed && get_mods() == 0) {
+        switch (keycode) {
+            case KC_A ... KC_Z:
+            case KC_ENTER:
+            case KC_ESCAPE:
+            case KC_BACKSPACE:
+            case KC_SPACE:
+            case KC_TAB:
+            case KC_DELETE:
+            case KC_SEMICOLON:
+            case KC_COMMA:
+            case KC_DOT:
+            case KC_SLASH:
+                layer_clear();
+        }
     }
     return true;
+}
+
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!record->event.pressed && get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
+        layer_clear();
+    }
 }
