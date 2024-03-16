@@ -28,6 +28,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format on
 };
 
+const uint16_t PROGMEM combo0[]  = {MT(MOD_LCTL, KC_S), MT(MOD_LSFT, KC_D), COMBO_END};
+const uint16_t PROGMEM combo1[]  = {MT(MOD_LSFT, KC_D), MT(MOD_LALT, KC_F), COMBO_END};
+const uint16_t PROGMEM combo2[]  = {MT(MOD_LSFT, KC_D), MT(MOD_LGUI, KC_A), COMBO_END};
+const uint16_t PROGMEM combo3[]  = {MT(MOD_LCTL, KC_S), MT(MOD_LALT, KC_F), COMBO_END};
+const uint16_t PROGMEM combo4[]  = {MT(MOD_LCTL, KC_S), MT(MOD_LGUI, KC_A), COMBO_END};
+const uint16_t PROGMEM combo5[]  = {MT(MOD_LGUI, KC_A), MT(MOD_LALT, KC_F), COMBO_END};
+const uint16_t PROGMEM combo6[]  = {MT(MOD_RSFT, KC_K), MT(MOD_RCTL, KC_L), COMBO_END};
+const uint16_t PROGMEM combo7[]  = {MT(MOD_RSFT, KC_K), MT(MOD_RALT, KC_J), COMBO_END};
+const uint16_t PROGMEM combo8[]  = {MT(MOD_RSFT, KC_K), MT(MOD_RGUI, KC_SCLN), COMBO_END};
+const uint16_t PROGMEM combo9[]  = {MT(MOD_RCTL, KC_L), MT(MOD_RALT, KC_J), COMBO_END};
+const uint16_t PROGMEM combo10[] = {MT(MOD_RCTL, KC_L), MT(MOD_RGUI, KC_SCLN), COMBO_END};
+const uint16_t PROGMEM combo11[] = {MT(MOD_RALT, KC_J), MT(MOD_RGUI, KC_SCLN), COMBO_END};
+
+combo_t key_combos[COMBO_COUNT] = {
+    COMBO(combo0, LSFT(KC_LEFT_CTRL)), COMBO(combo1, LSFT(KC_LEFT_ALT)), COMBO(combo2, LSFT(KC_LEFT_GUI)), COMBO(combo3, LCTL(KC_LEFT_ALT)), COMBO(combo4, LCTL(KC_LEFT_GUI)), COMBO(combo5, LALT(KC_LEFT_GUI)), COMBO(combo6, LSFT(KC_RIGHT_CTRL)), COMBO(combo7, LSFT(KC_RIGHT_ALT)), COMBO(combo8, LSFT(KC_RIGHT_GUI)), COMBO(combo9, LCTL(KC_RIGHT_ALT)), COMBO(combo10, LCTL(KC_RIGHT_GUI)), COMBO(combo11, LALT(KC_RIGHT_GUI)),
+};
+
 extern rgb_config_t rgb_matrix_config;
 
 void keyboard_post_init_user(void) {
