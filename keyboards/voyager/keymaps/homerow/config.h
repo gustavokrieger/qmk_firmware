@@ -8,7 +8,7 @@
 
 #define PERMISSIVE_HOLD
 
-#define COMBO_TERM 23
+#define COMBO_TERM 25
 
 #define USB_SUSPEND_WAKEUP_DELAY 0
 #define CAPS_LOCK_STATUS

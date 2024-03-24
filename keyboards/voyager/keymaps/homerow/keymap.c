@@ -103,9 +103,27 @@ bool rgb_matrix_indicators_user(void) {
     return true;
 }
 
+uint16_t pending  = KC_NO;
+uint16_t pending2 = KC_NO;
+bool     pressed  = false;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     dprintf("pressed: %d, key: 0x%04X - ", record->event.pressed, keycode);
     dprintf("process_record_user\n");
+
+    if (IS_QK_TO(keycode)) {
+        return true;
+    }
+
+    if (!record->event.pressed) {
+        if (keycode == pending2) {
+            tap_code(pending);
+            pending = KC_NO;
+            tap_code(pending2);
+            pending2 = KC_NO;
+        }
+        return true;
+    }
 
     if (record->event.pressed && get_mods() == 0) {
         switch (keycode) {
@@ -124,6 +142,115 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 layer_clear();
         }
     }
+
+    if (pending != KC_NO && record->event.pressed) {
+        switch (pending) {
+            case KC_A:
+            case KC_S:
+            case KC_D:
+            case KC_F:
+                switch (keycode) {
+                    case KC_6:
+                    case KC_7:
+                    case KC_8:
+                    case KC_9:
+                    case KC_0:
+                    case KC_Y:
+                    case KC_U:
+                    case KC_I:
+                    case KC_O:
+                    case KC_P:
+                    case KC_DELETE:
+                    case KC_H:
+                    case RALT_T(KC_J):
+                    case RSFT_T(KC_K):
+                    case RCTL_T(KC_L):
+                    case RGUI_T(KC_SCLN):
+                    case KC_ENTER:
+                    case KC_N:
+                    case KC_M:
+                    case KC_COMMA:
+                    case KC_DOT:
+                    case KC_SLASH:
+                    case KC_CAPS:
+                    case KC_BSPC:
+                        return true;
+                }
+        }
+
+        switch (pending) {
+            case KC_J:
+            case KC_K:
+            case KC_L:
+            case KC_SCLN:
+                switch (keycode) {
+                    case KC_1:
+                    case KC_2:
+                    case KC_3:
+                    case KC_4:
+                    case KC_5:
+                    case KC_TAB:
+                    case KC_Q:
+                    case KC_W:
+                    case KC_E:
+                    case KC_R:
+                    case KC_T:
+                    case KC_ESCAPE:
+                    case LGUI_T(KC_A):
+                    case LCTL_T(KC_S):
+                    case LSFT_T(KC_D):
+                    case LALT_T(KC_F):
+                    case KC_G:
+                    case KC_Z:
+                    case KC_X:
+                    case KC_C:
+                    case KC_V:
+                    case KC_B:
+                    case KC_SPACE:
+                        return true;
+                }
+        }
+
+        clear_mods();
+        pending2 = keycode;
+        return false;
+    }
+
+    switch (keycode) {
+        case LGUI_T(KC_A):
+            dprint("LGUI_T(KC_A)\n");
+            pending = KC_A;
+            break;
+        case LCTL_T(KC_S):
+            dprint("LCTL_T(KC_S)\n");
+            pending = KC_S;
+            break;
+        case LSFT_T(KC_D):
+            dprint("LSFT_T(KC_D)\n");
+            pending = KC_D;
+            break;
+        case LALT_T(KC_F):
+            dprint("LALT_T(KC_F)\n");
+            pending = KC_F;
+            break;
+        case RALT_T(KC_J):
+            dprint("RALT_T(KC_J)\n");
+            pending = KC_J;
+            break;
+        case RSFT_T(KC_K):
+            dprint("RSFT_T(KC_K)\n");
+            pending = KC_K;
+            break;
+        case RCTL_T(KC_L):
+            dprint("RCTL_T(KC_L)\n");
+            pending = KC_L;
+            break;
+        case RGUI_T(KC_SCLN):
+            dprint("RGUI_T(KC_SCLN)\n");
+            pending = KC_SCLN;
+            break;
+    }
+
     return true;
 }
 
@@ -131,7 +258,21 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
     dprintf("pressed: %d, key: 0x%04X - ", record->event.pressed, keycode);
     dprintf("post_process_record_user\n");
 
+    if (IS_QK_TO(keycode)) {
+        return;
+    }
+
     if (!record->event.pressed && get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
         layer_clear();
+    }
+
+    if (!record->event.pressed) {
+        if (IS_QK_MOD_TAP(keycode)) {
+            if (pending2 != KC_NO) {
+                tap_code(pending2);
+                pending2 = KC_NO;
+            }
+            pending = KC_NO;
+        }
     }
 }
