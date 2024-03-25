@@ -1,6 +1,7 @@
 #include QMK_KEYBOARD_H
 #include "version.h"
 #include "print.h"
+#include "config.h"
 
 #define MOON_LED_LEVEL LED_LEVEL
 
@@ -54,7 +55,18 @@ const uint16_t PROGMEM combo10[] = {MT_L, MT_SCLN, COMBO_END};
 const uint16_t PROGMEM combo11[] = {MT_J, MT_SCLN, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
-    COMBO(combo0, LSFT(KC_LEFT_CTRL)), COMBO(combo1, LSFT(KC_LEFT_GUI)), COMBO(combo2, LSFT(KC_LEFT_ALT)), COMBO(combo3, LCTL(KC_LEFT_GUI)), COMBO(combo4, LCTL(KC_LEFT_ALT)), COMBO(combo5, LALT(KC_LEFT_ALT)), COMBO(combo6, LSFT(KC_RIGHT_CTRL)), COMBO(combo7, LSFT(KC_RIGHT_GUI)), COMBO(combo8, LSFT(KC_RIGHT_ALT)), COMBO(combo9, LCTL(KC_RIGHT_GUI)), COMBO(combo10, LCTL(KC_RIGHT_ALT)), COMBO(combo11, LALT(KC_RIGHT_ALT)),
+    COMBO(combo0, LSFT(KC_LEFT_CTRL)),  //
+    COMBO(combo1, LSFT(KC_LEFT_GUI)),   //
+    COMBO(combo2, LSFT(KC_LEFT_ALT)),   //
+    COMBO(combo3, LCTL(KC_LEFT_GUI)),   //
+    COMBO(combo4, LCTL(KC_LEFT_ALT)),   //
+    COMBO(combo5, LALT(KC_LEFT_GUI)),   //
+    COMBO(combo6, RSFT(KC_RIGHT_CTRL)), //
+    COMBO(combo7, RSFT(KC_RIGHT_GUI)),  //
+    COMBO(combo8, RSFT(KC_RIGHT_ALT)),  //
+    COMBO(combo9, RCTL(KC_RIGHT_GUI)),  //
+    COMBO(combo10, RCTL(KC_RIGHT_ALT)), //
+    COMBO(combo11, RALT(KC_RIGHT_GUI)), //
 };
 
 extern rgb_config_t rgb_matrix_config;
