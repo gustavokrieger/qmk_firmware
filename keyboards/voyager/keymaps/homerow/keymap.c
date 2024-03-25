@@ -4,15 +4,15 @@
 
 #define MOON_LED_LEVEL LED_LEVEL
 
-#define MT_A LGUI_T(KC_A)
+#define MT_A LALT_T(KC_A)
 #define MT_S LCTL_T(KC_S)
 #define MT_D LSFT_T(KC_D)
-#define MT_F LALT_T(KC_F)
+#define MT_F LGUI_T(KC_F)
 
-#define MT_J RALT_T(KC_J)
+#define MT_J RGUI_T(KC_J)
 #define MT_K RSFT_T(KC_K)
 #define MT_L RCTL_T(KC_L)
-#define MT_SCLN RGUI_T(KC_SCLN)
+#define MT_SCLN RALT_T(KC_SCLN)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format off
@@ -27,14 +27,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_F6,          KC_F7,          KC_F8,          KC_F9,          KC_F10,         KC_NO,          
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_F12,         KC_NO,          KC_MINUS,       KC_EQUAL,       KC_NO,          KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_LEFT,        KC_DOWN,        KC_UP,          KC_RIGHT,       KC_QUOTE,       KC_TRANSPARENT, 
-    KC_TRANSPARENT, KC_LEFT_GUI,    KC_LEFT_CTRL,   KC_LEFT_SHIFT,  KC_LEFT_ALT,    KC_TRANSPARENT,                                 KC_NO,          KC_NO,          KC_LBRC,        KC_RBRC,        KC_BSLS,        KC_NO,          
+    KC_TRANSPARENT, KC_LEFT_ALT,    KC_LEFT_CTRL,   KC_LEFT_SHIFT,  KC_LEFT_GUI,    KC_TRANSPARENT,                                 KC_NO,          KC_NO,          KC_LBRC,        KC_RBRC,        KC_BSLS,        KC_NO,          
                                                     KC_TRANSPARENT, TO(0),                                          KC_TRANSPARENT, KC_TRANSPARENT
   ),
   [2] = LAYOUT_voyager(
     KC_NO,          KC_F1,          KC_F2,          KC_F3,          KC_F4,          KC_F5,                                          KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_F11,                                         KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_GRAVE,       KC_HOME,        KC_PAGE_UP,     KC_PGDN,        KC_END,                                         KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
-    KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,                                          KC_TRANSPARENT, KC_RIGHT_ALT,   KC_RIGHT_SHIFT, KC_RIGHT_CTRL,  KC_RIGHT_GUI,   KC_TRANSPARENT, 
+    KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,                                          KC_TRANSPARENT, KC_RIGHT_GUI,   KC_RIGHT_SHIFT, KC_RIGHT_CTRL,  KC_RIGHT_ALT,   KC_TRANSPARENT, 
                                                     KC_TRANSPARENT, KC_TRANSPARENT,                                 TO(0),          KC_TRANSPARENT
   ),
     // clang-format on
@@ -54,7 +54,7 @@ const uint16_t PROGMEM combo10[] = {MT_L, MT_SCLN, COMBO_END};
 const uint16_t PROGMEM combo11[] = {MT_J, MT_SCLN, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
-    COMBO(combo0, LSFT(KC_LEFT_CTRL)), COMBO(combo1, LSFT(KC_LEFT_ALT)), COMBO(combo2, LSFT(KC_LEFT_GUI)), COMBO(combo3, LCTL(KC_LEFT_ALT)), COMBO(combo4, LCTL(KC_LEFT_GUI)), COMBO(combo5, LALT(KC_LEFT_GUI)), COMBO(combo6, LSFT(KC_RIGHT_CTRL)), COMBO(combo7, LSFT(KC_RIGHT_ALT)), COMBO(combo8, LSFT(KC_RIGHT_GUI)), COMBO(combo9, LCTL(KC_RIGHT_ALT)), COMBO(combo10, LCTL(KC_RIGHT_GUI)), COMBO(combo11, LALT(KC_RIGHT_GUI)),
+    COMBO(combo0, LSFT(KC_LEFT_CTRL)), COMBO(combo1, LSFT(KC_LEFT_GUI)), COMBO(combo2, LSFT(KC_LEFT_ALT)), COMBO(combo3, LCTL(KC_LEFT_GUI)), COMBO(combo4, LCTL(KC_LEFT_ALT)), COMBO(combo5, LALT(KC_LEFT_ALT)), COMBO(combo6, LSFT(KC_RIGHT_CTRL)), COMBO(combo7, LSFT(KC_RIGHT_GUI)), COMBO(combo8, LSFT(KC_RIGHT_ALT)), COMBO(combo9, LCTL(KC_RIGHT_GUI)), COMBO(combo10, LCTL(KC_RIGHT_ALT)), COMBO(combo11, LALT(KC_RIGHT_ALT)),
 };
 
 extern rgb_config_t rgb_matrix_config;
