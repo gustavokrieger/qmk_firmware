@@ -1,14 +1,25 @@
 #include QMK_KEYBOARD_H
 #include "version.h"
 #include "print.h"
+
 #define MOON_LED_LEVEL LED_LEVEL
+
+#define MT_A LGUI_T(KC_A)
+#define MT_S LCTL_T(KC_S)
+#define MT_D LSFT_T(KC_D)
+#define MT_F LALT_T(KC_F)
+
+#define MT_J RALT_T(KC_J)
+#define MT_K RSFT_T(KC_K)
+#define MT_L RCTL_T(KC_L)
+#define MT_SCLN RGUI_T(KC_SCLN)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format off
   [0] = LAYOUT_voyager(
     KC_NO,          KC_1,           KC_2,           KC_3,           KC_4,           KC_5,                                           KC_6,           KC_7,           KC_8,           KC_9,           KC_0,           KC_NO,          
     KC_TAB,         KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,                                           KC_Y,           KC_U,           KC_I,           KC_O,           KC_P,           KC_DELETE,      
-    KC_ESCAPE,      MT(MOD_LGUI, KC_A),MT(MOD_LCTL, KC_S),MT(MOD_LSFT, KC_D),MT(MOD_LALT, KC_F),KC_G,                                           KC_H,           MT(MOD_RALT, KC_J),MT(MOD_RSFT, KC_K),MT(MOD_RCTL, KC_L),MT(MOD_RGUI, KC_SCLN),KC_ENTER,       
+    KC_ESCAPE,      MT_A,           MT_S,           MT_D,           MT_F,           KC_G,                                           KC_H,           MT_J,           MT_K,           MT_L,           MT_SCLN,        KC_ENTER,       
     KC_NO,          KC_Z,           KC_X,           KC_C,           KC_V,           KC_B,                                           KC_N,           KC_M,           KC_COMMA,       KC_DOT,         KC_SLASH,       KC_CAPS,        
                                                     KC_SPACE,       TO(1),                                          TO(2),          KC_BSPC
   ),
@@ -29,18 +40,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format on
 };
 
-const uint16_t PROGMEM combo0[]  = {MT(MOD_LCTL, KC_S), MT(MOD_LSFT, KC_D), COMBO_END};
-const uint16_t PROGMEM combo1[]  = {MT(MOD_LSFT, KC_D), MT(MOD_LALT, KC_F), COMBO_END};
-const uint16_t PROGMEM combo2[]  = {MT(MOD_LSFT, KC_D), MT(MOD_LGUI, KC_A), COMBO_END};
-const uint16_t PROGMEM combo3[]  = {MT(MOD_LCTL, KC_S), MT(MOD_LALT, KC_F), COMBO_END};
-const uint16_t PROGMEM combo4[]  = {MT(MOD_LCTL, KC_S), MT(MOD_LGUI, KC_A), COMBO_END};
-const uint16_t PROGMEM combo5[]  = {MT(MOD_LGUI, KC_A), MT(MOD_LALT, KC_F), COMBO_END};
-const uint16_t PROGMEM combo6[]  = {MT(MOD_RSFT, KC_K), MT(MOD_RCTL, KC_L), COMBO_END};
-const uint16_t PROGMEM combo7[]  = {MT(MOD_RSFT, KC_K), MT(MOD_RALT, KC_J), COMBO_END};
-const uint16_t PROGMEM combo8[]  = {MT(MOD_RSFT, KC_K), MT(MOD_RGUI, KC_SCLN), COMBO_END};
-const uint16_t PROGMEM combo9[]  = {MT(MOD_RCTL, KC_L), MT(MOD_RALT, KC_J), COMBO_END};
-const uint16_t PROGMEM combo10[] = {MT(MOD_RCTL, KC_L), MT(MOD_RGUI, KC_SCLN), COMBO_END};
-const uint16_t PROGMEM combo11[] = {MT(MOD_RALT, KC_J), MT(MOD_RGUI, KC_SCLN), COMBO_END};
+const uint16_t PROGMEM combo0[]  = {MT_S, MT_D, COMBO_END};
+const uint16_t PROGMEM combo1[]  = {MT_D, MT_F, COMBO_END};
+const uint16_t PROGMEM combo2[]  = {MT_D, MT_A, COMBO_END};
+const uint16_t PROGMEM combo3[]  = {MT_S, MT_F, COMBO_END};
+const uint16_t PROGMEM combo4[]  = {MT_S, MT_A, COMBO_END};
+const uint16_t PROGMEM combo5[]  = {MT_A, MT_F, COMBO_END};
+const uint16_t PROGMEM combo6[]  = {MT_K, MT_L, COMBO_END};
+const uint16_t PROGMEM combo7[]  = {MT_K, MT_J, COMBO_END};
+const uint16_t PROGMEM combo8[]  = {MT_K, MT_SCLN, COMBO_END};
+const uint16_t PROGMEM combo9[]  = {MT_L, MT_J, COMBO_END};
+const uint16_t PROGMEM combo10[] = {MT_L, MT_SCLN, COMBO_END};
+const uint16_t PROGMEM combo11[] = {MT_J, MT_SCLN, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
     COMBO(combo0, LSFT(KC_LEFT_CTRL)), COMBO(combo1, LSFT(KC_LEFT_ALT)), COMBO(combo2, LSFT(KC_LEFT_GUI)), COMBO(combo3, LCTL(KC_LEFT_ALT)), COMBO(combo4, LCTL(KC_LEFT_GUI)), COMBO(combo5, LALT(KC_LEFT_GUI)), COMBO(combo6, LSFT(KC_RIGHT_CTRL)), COMBO(combo7, LSFT(KC_RIGHT_ALT)), COMBO(combo8, LSFT(KC_RIGHT_GUI)), COMBO(combo9, LCTL(KC_RIGHT_ALT)), COMBO(combo10, LCTL(KC_RIGHT_GUI)), COMBO(combo11, LALT(KC_RIGHT_GUI)),
@@ -162,10 +173,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_P:
                     case KC_DELETE:
                     case KC_H:
-                    case RALT_T(KC_J):
-                    case RSFT_T(KC_K):
-                    case RCTL_T(KC_L):
-                    case RGUI_T(KC_SCLN):
+                    case MT_J:
+                    case MT_K:
+                    case MT_L:
+                    case MT_SCLN:
                     case KC_ENTER:
                     case KC_N:
                     case KC_M:
@@ -196,10 +207,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_R:
                     case KC_T:
                     case KC_ESCAPE:
-                    case LGUI_T(KC_A):
-                    case LCTL_T(KC_S):
-                    case LSFT_T(KC_D):
-                    case LALT_T(KC_F):
+                    case MT_A:
+                    case MT_S:
+                    case MT_D:
+                    case MT_F:
                     case KC_G:
                     case KC_Z:
                     case KC_X:
@@ -217,35 +228,35 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
-        case LGUI_T(KC_A):
+        case MT_A:
             dprint("LGUI_T(KC_A)\n");
             pending = KC_A;
             break;
-        case LCTL_T(KC_S):
+        case MT_S:
             dprint("LCTL_T(KC_S)\n");
             pending = KC_S;
             break;
-        case LSFT_T(KC_D):
+        case MT_D:
             dprint("LSFT_T(KC_D)\n");
             pending = KC_D;
             break;
-        case LALT_T(KC_F):
+        case MT_F:
             dprint("LALT_T(KC_F)\n");
             pending = KC_F;
             break;
-        case RALT_T(KC_J):
+        case MT_J:
             dprint("RALT_T(KC_J)\n");
             pending = KC_J;
             break;
-        case RSFT_T(KC_K):
+        case MT_K:
             dprint("RSFT_T(KC_K)\n");
             pending = KC_K;
             break;
-        case RCTL_T(KC_L):
+        case MT_L:
             dprint("RCTL_T(KC_L)\n");
             pending = KC_L;
             break;
-        case RGUI_T(KC_SCLN):
+        case MT_SCLN:
             dprint("RGUI_T(KC_SCLN)\n");
             pending = KC_SCLN;
             break;
