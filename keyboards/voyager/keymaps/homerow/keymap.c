@@ -126,29 +126,34 @@ bool rgb_matrix_indicators_user(void) {
     return true;
 }
 
-uint16_t pending  = KC_NO;
-uint16_t pending2 = KC_NO;
-bool     pressed  = false;
+uint16_t pending = KC_NO;
+uint16_t taps[10];
+int      taps_size = 0;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    dprintf("pressed: %d, key: 0x%04X - ", record->event.pressed, keycode);
-    dprintf("process_record_user\n");
+    dprintf("key: 0x%04X, pressed: %d", keycode, record->event.pressed);
+    dprint(" - process_record_user\n");
 
     if (IS_QK_TO(keycode)) {
+        dprint("IS_QK_TO\n");
         return true;
     }
 
     if (!record->event.pressed) {
-        if (keycode == pending2) {
+        dprint("released\n");
+        if (pending != KC_NO && taps_size != 0 && !IS_QK_MOD_TAP(keycode)) {
+            dprint("normal key released, tapping pending mod and normal taps\n");
             tap_code(pending);
             pending = KC_NO;
-            tap_code(pending2);
-            pending2 = KC_NO;
+            for (int i = 0; i < taps_size; i++) {
+                tap_code(taps[i]);
+            }
+            taps_size = 0;
         }
         return true;
     }
 
-    if (record->event.pressed && get_mods() == 0) {
+    if (get_mods() == 0) {
         switch (keycode) {
             case KC_A ... KC_0:
             case KC_ENTER:
@@ -162,11 +167,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             case KC_DOT:
             case KC_SLASH:
             case QK_MOD_TAP ... QK_MOD_TAP_MAX:
+                dprint("clearing layer\n");
                 layer_clear();
         }
     }
 
-    if (pending != KC_NO && record->event.pressed) {
+    if (pending != KC_NO) {
         switch (pending) {
             case KC_A:
             case KC_S:
@@ -197,10 +203,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_SLASH:
                     case KC_CAPS:
                     case KC_BSPC:
+                        dprint("handling key normally, since it is a bilateral combination\n");
                         return true;
                 }
         }
-
         switch (pending) {
             case KC_J:
             case KC_K:
@@ -230,46 +236,48 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_V:
                     case KC_B:
                     case KC_SPACE:
+                        dprint("handling key normally, since it is a bilateral combination\n");
                         return true;
                 }
         }
-
+        dprint("adding normal key to pending, since it was not a bilateral combination\n");
         clear_mods();
-        pending2 = keycode;
+        taps[taps_size] = keycode;
+        taps_size++;
         return false;
     }
 
     switch (keycode) {
         case MT_A:
-            dprint("LGUI_T(KC_A)\n");
+            dprint("pending MT_A\n");
             pending = KC_A;
             break;
         case MT_S:
-            dprint("LCTL_T(KC_S)\n");
+            dprint("pending MT_S\n");
             pending = KC_S;
             break;
         case MT_D:
-            dprint("LSFT_T(KC_D)\n");
+            dprint("pending MT_D\n");
             pending = KC_D;
             break;
         case MT_F:
-            dprint("LALT_T(KC_F)\n");
+            dprint("pending MT_F\n");
             pending = KC_F;
             break;
         case MT_J:
-            dprint("RALT_T(KC_J)\n");
+            dprint("pending MT_J\n");
             pending = KC_J;
             break;
         case MT_K:
-            dprint("RSFT_T(KC_K)\n");
+            dprint("pending MT_K\n");
             pending = KC_K;
             break;
         case MT_L:
-            dprint("RCTL_T(KC_L)\n");
+            dprint("pending MT_L\n");
             pending = KC_L;
             break;
         case MT_SCLN:
-            dprint("RGUI_T(KC_SCLN)\n");
+            dprint("pending MT_SCLN\n");
             pending = KC_SCLN;
             break;
     }
@@ -278,24 +286,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 }
 
 void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-    dprintf("pressed: %d, key: 0x%04X - ", record->event.pressed, keycode);
-    dprintf("post_process_record_user\n");
+    dprintf("key: 0x%04X, pressed: %d", keycode, record->event.pressed);
+    dprint(" - post_process_record_user\n");
 
     if (IS_QK_TO(keycode)) {
+        dprint("IS_QK_TO\n");
         return;
     }
 
-    if (!record->event.pressed && get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
+    if (record->event.pressed) {
+        dprint("do nothing since it is a press\n");
+        return;
+    }
+
+    if (get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
+        dprint("clearing layer\n");
         layer_clear();
     }
 
-    if (!record->event.pressed) {
-        if (IS_QK_MOD_TAP(keycode)) {
-            if (pending2 != KC_NO) {
-                tap_code(pending2);
-                pending2 = KC_NO;
-            }
-            pending = KC_NO;
+    if (pending != KC_NO && taps_size != 0 && IS_QK_MOD_TAP(keycode)) {
+        dprint("resolving normal taps\n");
+        pending = KC_NO;
+        for (int i = 0; i < taps_size; i++) {
+            tap_code(taps[i]);
         }
+        taps_size = 0;
     }
 }
