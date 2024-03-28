@@ -129,13 +129,20 @@ bool rgb_matrix_indicators_user(void) {
 uint16_t pending = KC_NO;
 uint16_t taps[10];
 int      taps_size = 0;
+bool     modding   = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    dprint("-------------------------------------\n");
     dprintf("key: 0x%04X, pressed: %d", keycode, record->event.pressed);
     dprint(" - process_record_user\n");
 
     if (IS_QK_TO(keycode)) {
         dprint("IS_QK_TO\n");
+        return true;
+    }
+
+    if (modding) {
+        dprint("do nothing since it is modding\n");
         return true;
     }
 
@@ -174,10 +181,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (pending != KC_NO) {
         switch (pending) {
-            case KC_A:
-            case KC_S:
-            case KC_D:
-            case KC_F:
+            case MT_A:
+            case MT_S:
+            case MT_D:
+            case MT_F:
                 switch (keycode) {
                     case KC_6:
                     case KC_7:
@@ -203,15 +210,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_SLASH:
                     case KC_CAPS:
                     case KC_BSPC:
-                        dprint("handling key normally, since it is a bilateral combination\n");
+                        dprint("handling key normally since it is a bilateral combination\n");
+                        modding = true;
                         return true;
                 }
         }
         switch (pending) {
-            case KC_J:
-            case KC_K:
-            case KC_L:
-            case KC_SCLN:
+            case MT_J:
+            case MT_K:
+            case MT_L:
+            case MT_SCLN:
                 switch (keycode) {
                     case KC_1:
                     case KC_2:
@@ -236,50 +244,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_V:
                     case KC_B:
                     case KC_SPACE:
-                        dprint("handling key normally, since it is a bilateral combination\n");
+                        dprint("handling key normally since it is a bilateral combination\n");
+                        modding = true;
                         return true;
                 }
         }
-        dprint("adding normal key to pending, since it was not a bilateral combination\n");
+        dprint("adding key to pending since it is not a bilateral combination\n");
         clear_mods();
         taps[taps_size] = keycode;
         taps_size++;
         return false;
     }
 
-    switch (keycode) {
-        case MT_A:
-            dprint("pending MT_A\n");
-            pending = KC_A;
-            break;
-        case MT_S:
-            dprint("pending MT_S\n");
-            pending = KC_S;
-            break;
-        case MT_D:
-            dprint("pending MT_D\n");
-            pending = KC_D;
-            break;
-        case MT_F:
-            dprint("pending MT_F\n");
-            pending = KC_F;
-            break;
-        case MT_J:
-            dprint("pending MT_J\n");
-            pending = KC_J;
-            break;
-        case MT_K:
-            dprint("pending MT_K\n");
-            pending = KC_K;
-            break;
-        case MT_L:
-            dprint("pending MT_L\n");
-            pending = KC_L;
-            break;
-        case MT_SCLN:
-            dprint("pending MT_SCLN\n");
-            pending = KC_SCLN;
-            break;
+    if (IS_QK_MOD_TAP(keycode)) {
+        dprint("pending mod\n");
+        pending = keycode;
     }
 
     return true;
@@ -299,13 +278,25 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         return;
     }
 
+    if (pending == keycode) {
+        dprint("clear pending and modding\n");
+        pending = KC_NO;
+        modding = false;
+        return;
+    }
+
+    if (modding) {
+        dprint("modding\n");
+        return;
+    }
+
     if (get_mods() == 0 && IS_MODIFIER_KEYCODE(keycode)) {
         dprint("clearing layer\n");
         layer_clear();
     }
 
-    if (pending != KC_NO && taps_size != 0 && IS_QK_MOD_TAP(keycode)) {
-        dprint("resolving normal taps\n");
+    if (pending != KC_NO && taps_size != 0) {
+        dprint("resolving non-mod pendind taps\n");
         pending = KC_NO;
         for (int i = 0; i < taps_size; i++) {
             tap_code(taps[i]);
