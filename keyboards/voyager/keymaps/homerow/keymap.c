@@ -279,10 +279,13 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     if (pending == keycode) {
-        dprint("clear pending and modding\n");
+        dprint("clear pending and modding, resolving non-mod pending taps\n");
         pending = KC_NO;
         modding = false;
-        return;
+        for (int i = 0; i < taps_size; i++) {
+            tap_code(taps[i]);
+        }
+        taps_size = 0;
     }
 
     if (modding) {
