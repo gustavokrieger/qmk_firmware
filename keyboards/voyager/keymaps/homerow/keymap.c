@@ -5,22 +5,32 @@
 
 #define MOON_LED_LEVEL LED_LEVEL
 
-#define MT_A LALT_T(KC_A)
-#define MT_S LCTL_T(KC_S)
-#define MT_D LSFT_T(KC_D)
-#define MT_F LGUI_T(KC_F)
+const enum qk_keycode_ranges MT_LP = LALT_T(KC_A);
+const enum qk_keycode_ranges MT_LR = LCTL_T(KC_S);
+const enum qk_keycode_ranges MT_LM = LSFT_T(KC_D);
+const enum qk_keycode_ranges MT_LI = LGUI_T(KC_F);
 
-#define MT_J RGUI_T(KC_J)
-#define MT_K RSFT_T(KC_K)
-#define MT_L RCTL_T(KC_L)
-#define MT_SCLN RALT_T(KC_SCLN)
+#define KC_A MT_LP
+#define KC_S MT_LR
+#define KC_D MT_LM
+#define KC_F MT_LI
+
+const enum qk_keycode_ranges MT_RI = RGUI_T(KC_J);
+const enum qk_keycode_ranges MT_RM = RSFT_T(KC_K);
+const enum qk_keycode_ranges MT_RR = RCTL_T(KC_L);
+const enum qk_keycode_ranges MT_RP = RALT_T(KC_SCLN);
+
+#define KC_J MT_RI
+#define KC_K MT_RM
+#define KC_L MT_RR
+#define KC_SCLN MT_RP
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format off
   [0] = LAYOUT_voyager(
     KC_NO,          KC_1,           KC_2,           KC_3,           KC_4,           KC_5,                                           KC_6,           KC_7,           KC_8,           KC_9,           KC_0,           KC_NO,          
     KC_TAB,         KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,                                           KC_Y,           KC_U,           KC_I,           KC_O,           KC_P,           KC_DELETE,      
-    KC_ESCAPE,      MT_A,           MT_S,           MT_D,           MT_F,           KC_G,                                           KC_H,           MT_J,           MT_K,           MT_L,           MT_SCLN,        KC_ENTER,       
+    KC_ESCAPE,      KC_A,           KC_S,           KC_D,           KC_F,           KC_G,                                           KC_H,           KC_J,           KC_K,           KC_L,           KC_SCLN,        KC_ENTER,       
     KC_NO,          KC_Z,           KC_X,           KC_C,           KC_V,           KC_B,                                           KC_N,           KC_M,           KC_COMMA,       KC_DOT,         KC_SLASH,       KC_CAPS,        
                                                     KC_SPACE,       TO(1),                                          TO(2),          KC_BSPC
   ),
@@ -41,18 +51,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format on
 };
 
-const uint16_t PROGMEM combo0[]  = {MT_S, MT_D, COMBO_END};
-const uint16_t PROGMEM combo1[]  = {MT_D, MT_F, COMBO_END};
-const uint16_t PROGMEM combo2[]  = {MT_D, MT_A, COMBO_END};
-const uint16_t PROGMEM combo3[]  = {MT_S, MT_F, COMBO_END};
-const uint16_t PROGMEM combo4[]  = {MT_S, MT_A, COMBO_END};
-const uint16_t PROGMEM combo5[]  = {MT_A, MT_F, COMBO_END};
-const uint16_t PROGMEM combo6[]  = {MT_K, MT_L, COMBO_END};
-const uint16_t PROGMEM combo7[]  = {MT_K, MT_J, COMBO_END};
-const uint16_t PROGMEM combo8[]  = {MT_K, MT_SCLN, COMBO_END};
-const uint16_t PROGMEM combo9[]  = {MT_L, MT_J, COMBO_END};
-const uint16_t PROGMEM combo10[] = {MT_L, MT_SCLN, COMBO_END};
-const uint16_t PROGMEM combo11[] = {MT_J, MT_SCLN, COMBO_END};
+const uint16_t PROGMEM combo0[]  = {MT_LR, MT_LM, COMBO_END};
+const uint16_t PROGMEM combo1[]  = {MT_LM, MT_LI, COMBO_END};
+const uint16_t PROGMEM combo2[]  = {MT_LM, MT_LP, COMBO_END};
+const uint16_t PROGMEM combo3[]  = {MT_LR, MT_LI, COMBO_END};
+const uint16_t PROGMEM combo4[]  = {MT_LR, MT_LP, COMBO_END};
+const uint16_t PROGMEM combo5[]  = {MT_LP, MT_LI, COMBO_END};
+const uint16_t PROGMEM combo6[]  = {MT_RM, MT_RR, COMBO_END};
+const uint16_t PROGMEM combo7[]  = {MT_RM, MT_RI, COMBO_END};
+const uint16_t PROGMEM combo8[]  = {MT_RM, MT_RP, COMBO_END};
+const uint16_t PROGMEM combo9[]  = {MT_RR, MT_RI, COMBO_END};
+const uint16_t PROGMEM combo10[] = {MT_RR, MT_RP, COMBO_END};
+const uint16_t PROGMEM combo11[] = {MT_RI, MT_RP, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
     COMBO(combo0, LSFT(KC_LEFT_CTRL)),  //
@@ -162,7 +172,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (get_mods() == 0) {
         switch (keycode) {
-            case KC_A ... KC_0:
+            case KC_NO ... KC_0:
             case KC_ENTER:
             case KC_ESCAPE:
             case KC_BACKSPACE:
@@ -170,9 +180,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             case KC_TAB:
             case KC_DELETE:
             case KC_SEMICOLON:
-            case KC_COMMA:
-            case KC_DOT:
-            case KC_SLASH:
             case QK_MOD_TAP ... QK_MOD_TAP_MAX:
                 dprint("clearing layer\n");
                 layer_clear();
@@ -181,10 +188,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (pending != KC_NO) {
         switch (pending) {
-            case MT_A:
-            case MT_S:
-            case MT_D:
-            case MT_F:
+            case MT_LP:
+            case MT_LR:
+            case MT_LM:
+            case MT_LI:
                 switch (keycode) {
                     case KC_6:
                     case KC_7:
@@ -198,10 +205,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_P:
                     case KC_DELETE:
                     case KC_H:
-                    case MT_J:
-                    case MT_K:
-                    case MT_L:
-                    case MT_SCLN:
+                    case KC_J:
+                    case KC_K:
+                    case KC_L:
+                    case KC_SCLN:
                     case KC_ENTER:
                     case KC_N:
                     case KC_M:
@@ -216,10 +223,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 }
         }
         switch (pending) {
-            case MT_J:
-            case MT_K:
-            case MT_L:
-            case MT_SCLN:
+            case MT_RI:
+            case MT_RM:
+            case MT_RR:
+            case MT_RP:
                 switch (keycode) {
                     case KC_1:
                     case KC_2:
@@ -233,10 +240,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     case KC_R:
                     case KC_T:
                     case KC_ESCAPE:
-                    case MT_A:
-                    case MT_S:
-                    case MT_D:
-                    case MT_F:
+                    case KC_A:
+                    case KC_S:
+                    case KC_D:
+                    case KC_F:
                     case KC_G:
                     case KC_Z:
                     case KC_X:
