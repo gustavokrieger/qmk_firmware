@@ -5,25 +5,25 @@
 
 #define MOON_LED_LEVEL LED_LEVEL
 
-const enum qk_keycode_ranges MT_LP = LALT_T(KC_A);
-const enum qk_keycode_ranges MT_LR = LCTL_T(KC_S);
-const enum qk_keycode_ranges MT_LM = LSFT_T(KC_D);
-const enum qk_keycode_ranges MT_LI = LGUI_T(KC_F);
+const enum qk_keycode_ranges MT_LP = LALT_T(KC_Z);
+const enum qk_keycode_ranges MT_LR = LCTL_T(KC_X);
+const enum qk_keycode_ranges MT_LM = LSFT_T(KC_C);
+const enum qk_keycode_ranges MT_LI = LGUI_T(KC_V);
 
-#define KC_A MT_LP
-#define KC_S MT_LR
-#define KC_D MT_LM
-#define KC_F MT_LI
+#define KC_Z MT_LP
+#define KC_X MT_LR
+#define KC_C MT_LM
+#define KC_V MT_LI
 
-const enum qk_keycode_ranges MT_RI = RGUI_T(KC_J);
-const enum qk_keycode_ranges MT_RM = RSFT_T(KC_K);
-const enum qk_keycode_ranges MT_RR = RCTL_T(KC_L);
-const enum qk_keycode_ranges MT_RP = RALT_T(KC_SCLN);
+const enum qk_keycode_ranges MT_RI = RGUI_T(KC_M);
+const enum qk_keycode_ranges MT_RM = RSFT_T(KC_COMMA);
+const enum qk_keycode_ranges MT_RR = RCTL_T(KC_DOT);
+const enum qk_keycode_ranges MT_RP = RALT_T(KC_SLASH);
 
-#define KC_J MT_RI
-#define KC_K MT_RM
-#define KC_L MT_RR
-#define KC_SCLN MT_RP
+#define KC_M MT_RI
+#define KC_COMMA MT_RM
+#define KC_DOT MT_RR
+#define KC_SLASH MT_RP
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // clang-format off
