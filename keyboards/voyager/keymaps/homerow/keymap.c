@@ -6,8 +6,8 @@
 #define MOON_LED_LEVEL LED_LEVEL
 
 const enum qk_keycode_ranges MT_LP = LALT_T(KC_Z);
-const enum qk_keycode_ranges MT_LR = LCTL_T(KC_X);
-const enum qk_keycode_ranges MT_LM = LSFT_T(KC_C);
+const enum qk_keycode_ranges MT_LR = LSFT_T(KC_X);
+const enum qk_keycode_ranges MT_LM = LCTL_T(KC_C);
 const enum qk_keycode_ranges MT_LI = LGUI_T(KC_V);
 
 #define KC_Z MT_LP
@@ -16,8 +16,8 @@ const enum qk_keycode_ranges MT_LI = LGUI_T(KC_V);
 #define KC_V MT_LI
 
 const enum qk_keycode_ranges MT_RI = RGUI_T(KC_M);
-const enum qk_keycode_ranges MT_RM = RSFT_T(KC_COMMA);
-const enum qk_keycode_ranges MT_RR = RCTL_T(KC_DOT);
+const enum qk_keycode_ranges MT_RM = RCTL_T(KC_COMMA);
+const enum qk_keycode_ranges MT_RR = RSFT_T(KC_DOT);
 const enum qk_keycode_ranges MT_RP = RALT_T(KC_SLASH);
 
 #define KC_M MT_RI
@@ -38,14 +38,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_F6,          KC_F7,          KC_F8,          KC_F9,          KC_F10,         KC_NO,          
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_F12,         KC_NO,          KC_MINUS,       KC_EQUAL,       KC_NO,          KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_LEFT,        KC_DOWN,        KC_UP,          KC_RIGHT,       KC_QUOTE,       KC_TRANSPARENT, 
-    KC_TRANSPARENT, KC_LEFT_ALT,    KC_LEFT_CTRL,   KC_LEFT_SHIFT,  KC_LEFT_GUI,    KC_TRANSPARENT,                                 KC_NO,          KC_NO,          KC_LBRC,        KC_RBRC,        KC_BSLS,        KC_NO,          
+    KC_TRANSPARENT, KC_LEFT_ALT,    KC_LEFT_SHIFT,   KC_LEFT_CTRL,  KC_LEFT_GUI,    KC_TRANSPARENT,                                 KC_NO,          KC_NO,          KC_LBRC,        KC_RBRC,        KC_BSLS,        KC_NO,          
                                                     KC_TRANSPARENT, TO(0),                                          KC_TRANSPARENT, KC_TRANSPARENT
   ),
   [2] = LAYOUT_voyager(
     KC_NO,          KC_F1,          KC_F2,          KC_F3,          KC_F4,          KC_F5,                                          KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_F11,                                         KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_GRAVE,       KC_HOME,        KC_PAGE_UP,     KC_PGDN,        KC_END,                                         KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
-    KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,                                          KC_TRANSPARENT, KC_RIGHT_GUI,   KC_RIGHT_SHIFT, KC_RIGHT_CTRL,  KC_RIGHT_ALT,   KC_TRANSPARENT, 
+    KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,          KC_NO,                                          KC_TRANSPARENT, KC_RIGHT_GUI,   KC_RIGHT_CTRL, KC_RIGHT_SHIFT,  KC_RIGHT_ALT,   KC_TRANSPARENT, 
                                                     KC_TRANSPARENT, KC_TRANSPARENT,                                 TO(0),          KC_TRANSPARENT
   ),
     // clang-format on
@@ -66,16 +66,16 @@ const uint16_t PROGMEM combo11[] = {MT_RI, MT_RP, COMBO_END};
 
 combo_t key_combos[COMBO_COUNT] = {
     COMBO(combo0, LSFT(KC_LEFT_CTRL)),  //
-    COMBO(combo1, LSFT(KC_LEFT_GUI)),   //
-    COMBO(combo2, LSFT(KC_LEFT_ALT)),   //
-    COMBO(combo3, LCTL(KC_LEFT_GUI)),   //
-    COMBO(combo4, LCTL(KC_LEFT_ALT)),   //
+    COMBO(combo1, LCTL(KC_LEFT_GUI)),   //
+    COMBO(combo2, LCTL(KC_LEFT_ALT)),   //
+    COMBO(combo3, LSFT(KC_LEFT_GUI)),   //
+    COMBO(combo4, LSFT(KC_LEFT_ALT)),   //
     COMBO(combo5, LALT(KC_LEFT_GUI)),   //
     COMBO(combo6, RSFT(KC_RIGHT_CTRL)), //
-    COMBO(combo7, RSFT(KC_RIGHT_GUI)),  //
-    COMBO(combo8, RSFT(KC_RIGHT_ALT)),  //
-    COMBO(combo9, RCTL(KC_RIGHT_GUI)),  //
-    COMBO(combo10, RCTL(KC_RIGHT_ALT)), //
+    COMBO(combo7, RCTL(KC_RIGHT_GUI)),  //
+    COMBO(combo8, RCTL(KC_RIGHT_ALT)),  //
+    COMBO(combo9, RSFT(KC_RIGHT_GUI)),  //
+    COMBO(combo10, RSFT(KC_RIGHT_ALT)), //
     COMBO(combo11, RALT(KC_RIGHT_GUI)), //
 };
 
