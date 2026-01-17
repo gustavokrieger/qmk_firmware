@@ -149,3 +149,5 @@ via*.json
 !/keyboards/zsa/voyager/keymaps/old/**
 !/keyboards/zsa/voyager/keymaps/top
 !/keyboards/zsa/voyager/keymaps/top/**
+!/keyboards/zsa/voyager/keymaps/bilateral
+!/keyboards/zsa/voyager/keymaps/bilateral/**
