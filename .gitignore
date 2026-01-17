@@ -133,3 +133,19 @@ via*.json
 !/keyboards/zsa/**/keymaps/default/**
 !/keyboards/zsa/**/keymaps/oryx
 !/keyboards/zsa/**/keymaps/oryx/**
+
+# Custom keymaps
+!/keyboards/zsa/voyager/keymaps/bk
+!/keyboards/zsa/voyager/keymaps/bk/**
+!/keyboards/zsa/voyager/keymaps/combos
+!/keyboards/zsa/voyager/keymaps/combos/**
+!/keyboards/zsa/voyager/keymaps/gustavokrieger
+!/keyboards/zsa/voyager/keymaps/gustavokrieger/**
+!/keyboards/zsa/voyager/keymaps/homerow
+!/keyboards/zsa/voyager/keymaps/homerow/**
+!/keyboards/zsa/voyager/keymaps/homerow2
+!/keyboards/zsa/voyager/keymaps/homerow2/**
+!/keyboards/zsa/voyager/keymaps/old
+!/keyboards/zsa/voyager/keymaps/old/**
+!/keyboards/zsa/voyager/keymaps/top
+!/keyboards/zsa/voyager/keymaps/top/**
