@@ -168,7 +168,7 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
         case KC_LCTL ... KC_RGUI:
         case KC_MEH:
-        case KC_HYPER:
+        case KC_HYPR:
             if (!record->event.pressed && get_mods() == 0) {
                 layer_move(0);
             }
