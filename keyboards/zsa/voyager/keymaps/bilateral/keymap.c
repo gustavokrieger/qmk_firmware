@@ -125,6 +125,7 @@ bool rgb_matrix_indicators_user(void) {
 }
 
 static bool layer = false;
+static bool stop  = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
@@ -157,6 +158,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 layer_on(2);
                 layer = true;
             } else {
+                if (stop) {
+                    layer_off(1);
+                    stop = false;
+                }
                 layer_off(2);
                 layer = false;
             }
@@ -167,18 +172,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 layer_on(4);
                 layer = true;
             } else {
+                if (stop) {
+                    layer_off(3);
+                    stop = false;
+                }
                 layer_off(4);
                 layer = false;
             }
             return false;
         case KC_LCTL ... KC_RGUI:
-        // already handled above.
-        // case KC_MEH:
-        // case KC_HYPR:
+            // already handled above.
+            // case KC_MEH:
+            // case KC_HYPR:
             break;
         default:
+            stop = true;
             if (!record->event.pressed && !layer && get_mods() == 0) {
                 layer_move(0);
+                stop = false;
             }
             break;
     }
@@ -192,6 +203,7 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_HYPR:
             if (!record->event.pressed && !layer && get_mods() == 0) {
                 layer_move(0);
+                stop = false;
             }
             break;
     }
