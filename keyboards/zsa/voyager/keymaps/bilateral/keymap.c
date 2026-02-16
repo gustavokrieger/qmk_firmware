@@ -7,6 +7,8 @@
 
 enum custom_keycodes {
     RGB_SLD = ZSA_SAFE_RANGE,
+    LEFT_LAYER,
+    RIGHT_LAYER,
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -16,7 +18,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TAB,         KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,                                           KC_Y,           KC_U,           KC_I,           KC_O,           KC_P,           KC_DELETE,
     KC_ESCAPE,      KC_A,           KC_S,           KC_D,           KC_F,           KC_G,                                           KC_H,           KC_J,           KC_K,           KC_L,           KC_SCLN,        KC_ENTER,
     KC_HYPR,        KC_Z,           KC_X,           KC_C,           KC_V,           KC_B,                                           KC_N,           KC_M,           KC_COMMA,       KC_DOT,         KC_SLASH,       KC_HYPR,
-                                                    KC_SPACE,       OSL(1),                                          KC_BSPC,        OSL(3)
+                                                    KC_SPACE,       LEFT_LAYER,                                          KC_BSPC,        RIGHT_LAYER
   ),
   [1] = LAYOUT_voyager(
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,
@@ -122,6 +124,8 @@ bool rgb_matrix_indicators_user(void) {
     return true;
 }
 
+static bool layer = false;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case QK_MODS ... QK_MODS_MAX:
@@ -146,30 +150,47 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 rgblight_mode(1);
             }
             return false;
+
+        case LEFT_LAYER:
+            if (record->event.pressed) {
+                layer_move(1);
+                layer_on(2);
+                layer = true;
+            } else {
+                layer_off(2);
+                layer = false;
+            }
+            return false;
+        case RIGHT_LAYER:
+            if (record->event.pressed) {
+                layer_move(3);
+                layer_on(4);
+                layer = true;
+            } else {
+                layer_off(4);
+                layer = false;
+            }
+            return false;
+        case KC_LCTL ... KC_RGUI:
+        // already handled above.
+        // case KC_MEH:
+        // case KC_HYPR:
+            break;
+        default:
+            if (!record->event.pressed && !layer && get_mods() == 0) {
+                layer_move(0);
+            }
+            break;
     }
     return true;
 }
 
 void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case OSL(1):
-            if (record->event.pressed) {
-                layer_on(2);
-            } else {
-                layer_off(2);
-            }
-            break;
-        case OSL(3):
-            if (record->event.pressed) {
-                layer_on(4);
-            } else {
-                layer_off(4);
-            }
-            break;
         case KC_LCTL ... KC_RGUI:
         case KC_MEH:
         case KC_HYPR:
-            if (!record->event.pressed && get_mods() == 0) {
+            if (!record->event.pressed && !layer && get_mods() == 0) {
                 layer_move(0);
             }
             break;
