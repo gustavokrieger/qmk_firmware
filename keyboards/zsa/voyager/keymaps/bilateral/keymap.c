@@ -248,8 +248,9 @@ bool rgb_matrix_indicators_user(void) {
     return true;
 }
 
-static bool layer = false;
-static bool stop  = false;
+static bool    layer_key_held;
+static bool    stop;
+static uint8_t held_layer_mods;
 
 static const uint16_t combo_extension_keys[ARRAY_SIZE(key_combos)][3] = {
     // clang-format off
@@ -430,44 +431,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
 
         case LEFT:
+        case RIGHT: {
+            const uint8_t mod_layer = keycode == LEFT ? 1 : 3;
             if (record->event.pressed) {
-                layer_move(1);
-                layer_on(2);
-                layer = true;
+                layer_move(mod_layer);
+                layer_on(mod_layer + 1);
+                layer_key_held = true;
             } else {
-                if (stop) {
-                    layer_off(1);
-                    layer_off(2);
-                    stop = false;
-                } else if (get_mods() != 0) {
-                    layer_off(2);
+                if (held_layer_mods == 0) {
+                    if (stop) {
+                        layer_off(mod_layer);
+                        layer_off(mod_layer + 1);
+                    } else if (get_mods() != 0) {
+                        layer_off(mod_layer + 1);
+                    }
                 }
-                layer = false;
+                stop           = false;
+                layer_key_held = false;
             }
             return false;
-        case RIGHT:
-            if (record->event.pressed) {
-                layer_move(3);
-                layer_on(4);
-                layer = true;
-            } else {
-                if (stop) {
-                    layer_off(3);
-                    layer_off(4);
-                    stop = false;
-                } else if (get_mods() != 0) {
-                    layer_off(4);
-                }
-                layer = false;
-            }
-            return false;
+        }
         case KC_LCTL ... KC_RGUI:
-            // already handled above.
-            // case KC_MEH:
-            // case KC_HYPR:
             break;
         default:
-            if (record->event.pressed && layer) {
+            if (record->event.pressed && layer_key_held) {
                 stop = true;
             }
             break;
@@ -480,21 +467,33 @@ void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_LCTL ... KC_RGUI:
         case KC_MEH:
         case KC_HYPR:
-        case KC_RHYPR:
-            if (record->event.pressed) {
-                if (!layer) {
-                    layer_off(2);
-                    layer_off(4);
-                }
-            } else {
-                if (!layer && get_mods() == 0) {
-                    layer_off(1);
-                    layer_off(3);
+        case KC_RHYPR: {
+            // The cached source layer stays the same on release, even with the overlay active.
+            const uint8_t source_layer = IS_KEYEVENT(record->event) ? read_source_layers_cache(record->event.key) : 0;
+            const bool    is_layer_mod = source_layer == 1 || source_layer == 3;
+            if (is_layer_mod) {
+                if (record->event.pressed) {
+                    ++held_layer_mods;
+                    layer_on(source_layer + 1);
+                } else {
+                    --held_layer_mods;
                 }
             }
+            if (layer_key_held || held_layer_mods != 0) {
+                break;
+            }
+            if (record->event.pressed || is_layer_mod) {
+                layer_off(2);
+                layer_off(4);
+            }
+            if (!record->event.pressed && get_mods() == 0) {
+                layer_off(1);
+                layer_off(3);
+            }
             break;
+        }
         default:
-            if (!record->event.pressed && !layer) {
+            if (!record->event.pressed && !layer_key_held && held_layer_mods == 0) {
                 layer_off(2);
                 layer_off(4);
                 if (get_mods() == 0) {
