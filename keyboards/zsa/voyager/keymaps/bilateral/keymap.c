@@ -5,7 +5,7 @@
 #ifndef ZSA_SAFE_RANGE
 #    define ZSA_SAFE_RANGE SAFE_RANGE
 #endif
-#define KC_RHYPR (QK_RCTL | QK_RSFT | QK_RALT | QK_RGUI | KC_NO)
+#define KC_RHYPR RCSG(KC_LALT)
 
 enum custom_keycodes {
     RGB_SLD = ZSA_SAFE_RANGE,
